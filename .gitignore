@@ -1,3 +1,4 @@
+output/
 # Ignore build output and user-specific files
 bin/
 obj/
