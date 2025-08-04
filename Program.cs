@@ -14,7 +14,7 @@ namespace SupportedLocales
         // API endpoints
         public static string SttUri => $"https://{SpeechRegion}.stt.speech.microsoft.com/api/v1.0/languages/recognition";
         public static string VoicesUri => $"https://{SpeechRegion}.tts.speech.microsoft.com/cognitiveservices/voices/list";
-        public static string BaseModelsUri => $"https://{SpeechRegion}.api.cognitive.microsoft.com/speechtotext/v3.2/models/base";
+        public static string BaseModelsUri => $"https://{SpeechRegion}.api.cognitive.microsoft.com/speechtotext/models/base?api-version=2024-11-15";
         public static string FastTranscriptionLocalesUri => $"https://{SpeechRegion}.api.cognitive.microsoft.com/speechtotext/transcriptions/locales?api-version=2024-11-15";
         public const string QueryString = "?alt=json";
         
@@ -105,7 +105,7 @@ namespace SupportedLocales
 
         public List<BaseModel> GetCustomSpeechBaseModels()
         {
-            var url = $"{Configuration.BaseModelsUri}{Configuration.QueryString}";
+            var url = Configuration.BaseModelsUri;
             var customSpeechBaseModels = new List<BaseModel>();
             do 
             {
@@ -597,6 +597,11 @@ namespace SupportedLocales
     }
 
     // Data model classes
+    public class BaseModelLinks
+    {
+        [JsonProperty("manifest")]
+        public string? Manifest { get; set; }
+    }
     public class TtsVoice
     {
             [JsonProperty("shortName")]
@@ -661,27 +666,39 @@ namespace SupportedLocales
     {
         [JsonProperty("self")]
         public string? Self { get; set; }
-        
+
+        [JsonProperty("links")]
+        public BaseModelLinks? Links { get; set; }
+
         [JsonProperty("locale")]
         public string? Locale { get; set; }
-        
+
         [JsonProperty("status")]
         public string? Status { get; set; }
-        
+
         [JsonProperty("properties")]
         public ModelProperties? Properties { get; set; }
-        
+
         [JsonProperty("displayName")]
         public string? DisplayName { get; set; }
+
+        [JsonProperty("createdDateTime")]
+        public DateTime? CreatedDateTime { get; set; }
+
+        [JsonProperty("lastActionDateTime")]
+        public DateTime? LastActionDateTime { get; set; }
     }
 
     public class ModelProperties
     {
         [JsonProperty("deprecationDates")]
         public ModelDeprecationDates? DeprecationDates { get; set; }
-        
+
         [JsonProperty("features")]
         public ModelFeatures? Features { get; set; }
+
+        [JsonProperty("chargeForAdaptation")]
+        public bool? ChargeForAdaptation { get; set; }
     }
 
     public class ModelDeprecationDates

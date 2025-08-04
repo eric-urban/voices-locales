@@ -38,8 +38,3 @@ Generates markdown tables for Azure AI Speech voices, locales, and features. Out
 - `stt.md`: Speech to text languages and features
 - `tts.md`: Text to speech voices
 - `voice-styles-and-roles.md`: Voice styles and roles
-
-## Known issues
-
-- The code currently uses the endpoint `api.cognitive.microsoft.com/speechtotext/v3.2/models/base` for speech base models. This will need to be upgraded to `api.cognitive.microsoft.com/speechtotext/models/base?api-version=2024-11-15` before Microsoft retires speech to text v3.2. 
-
