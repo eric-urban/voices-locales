@@ -29,6 +29,7 @@ An example of rendered language and locales tables at `learn.microsoft.com` can 
    dotnet run
    ```
 
+
 ## What it does
 
 Generates markdown tables for Azure AI Speech voices, locales, and features. Output files are saved in the `output/` directory:
@@ -37,4 +38,3 @@ Generates markdown tables for Azure AI Speech voices, locales, and features. Out
 - `stt.md`: Speech to text languages and features
 - `tts.md`: Text to speech voices
 - `voice-styles-and-roles.md`: Voice styles and roles
-
