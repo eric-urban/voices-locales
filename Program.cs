@@ -103,10 +103,10 @@ namespace SupportedLocales
             return GetResourceAsync<FastTranscriptionLanguages>(Configuration.FastTranscriptionLocalesUri).GetAwaiter().GetResult();
         }
 
-        public List<BaseModel> GetCustomSpeechBaseModels()
+        public List<BaseModel> GetSpeechBaseModels()
         {
             var url = Configuration.BaseModelsUri;
-            var customSpeechBaseModels = new List<BaseModel>();
+            var speechBaseModels = new List<BaseModel>();
             do 
             {
                 var baseModelCollection = GetResourceAsync<BaseModelCollection>(url).GetAwaiter().GetResult();
@@ -117,18 +117,18 @@ namespace SupportedLocales
                     {
                         if (baseModel?.Properties?.DeprecationDates?.AdaptationDateTime != null && baseModel.Properties.DeprecationDates.AdaptationDateTime > DateTime.Now)
                         {
-                            customSpeechBaseModels.Add(baseModel);
+                            speechBaseModels.Add(baseModel);
                         }
                     }
                 }
                 url = baseModelCollection.NextLink ?? string.Empty;
             } while(!string.IsNullOrEmpty(url));
-            customSpeechBaseModels.Sort((x, y) => string.Compare(x.Locale ?? string.Empty, y.Locale ?? string.Empty, StringComparison.Ordinal));
-            for(int i = 0; i < customSpeechBaseModels.Count; i++)
+            speechBaseModels.Sort((x, y) => string.Compare(x.Locale ?? string.Empty, y.Locale ?? string.Empty, StringComparison.Ordinal));
+            for(int i = 0; i < speechBaseModels.Count; i++)
             {
-                customSpeechBaseModels[i].Locale = LocaleHelper.NormalizeLocale(customSpeechBaseModels[i].Locale ?? string.Empty);
+                speechBaseModels[i].Locale = LocaleHelper.NormalizeLocale(speechBaseModels[i].Locale ?? string.Empty);
             }
-            return customSpeechBaseModels;
+            return speechBaseModels;
         }
 
         public List<TtsVoice> GetTtsVoices()
@@ -252,8 +252,8 @@ namespace SupportedLocales
                 Console.WriteLine("Fetching fast transcription locales...");
                 var fastTranscriptionLanguages = apiClient.GetFastTranscriptionLanguages();
 
-                Console.WriteLine("Fetching custom speech base models...");
-                var customSpeechBaseModels = apiClient.GetCustomSpeechBaseModels();
+                Console.WriteLine("Fetching speech base models...");
+                var speechBaseModels = apiClient.GetSpeechBaseModels();
 
                 Console.WriteLine("Fetching text to speech voices...");
                 var ttsVoices = apiClient.GetTtsVoices();
@@ -272,7 +272,7 @@ namespace SupportedLocales
                 File.WriteAllLines(languageIdFilePath, languageIdMarkdown, Encoding.UTF8);
 
                 Console.WriteLine("Generating speech to text markdown...");
-                var sttMarkdown = sttGenerator.Generate(sttLanguages, fastTranscriptionLanguages, customSpeechBaseModels);
+                var sttMarkdown = sttGenerator.Generate(sttLanguages, fastTranscriptionLanguages, speechBaseModels);
                 var sttFilePath = Path.Combine(Configuration.OutputDirectory, Configuration.OutputFiles["stt"]);
                 File.WriteAllLines(sttFilePath, sttMarkdown, Encoding.UTF8);
 
@@ -358,7 +358,7 @@ namespace SupportedLocales
     
     public class SttMarkdownGenerator : MarkdownGeneratorBase
     {
-        public List<string> Generate(List<SttLanguage> sttLanguages, FastTranscriptionLanguages fastTranscriptionLanguages, List<BaseModel> customSpeechBaseModels)
+        public List<string> Generate(List<SttLanguage> sttLanguages, FastTranscriptionLanguages fastTranscriptionLanguages, List<BaseModel> speechBaseModels)
         {
             var sttLocales = LocaleHelper.ExtractLocalesDictionary(sttLanguages);
             var languageCells = CreateLanguageCells(sttLocales);
@@ -373,7 +373,7 @@ namespace SupportedLocales
                 }
             }
             
-            var customSpeechBaseModelCells = CreateCustomSpeechBaseModelCells(customSpeechBaseModels);
+            var speechBaseModelCells = CreateSpeechBaseModelCells(speechBaseModels);
             
             var markdown = new List<string>
             {
@@ -386,28 +386,28 @@ namespace SupportedLocales
                 var row = $"| `{locale.Key}` | ";
                 row += languageCells.ContainsKey(locale.Key) ? $"{languageCells[locale.Key]} | " : "Not supported | ";
                 row += fastTranscriptionTranscribeLocales.ContainsKey(locale.Key) ? "Yes | " : "No | ";
-                row += customSpeechBaseModelCells.ContainsKey(locale.Key) ? $"{customSpeechBaseModelCells[locale.Key]} |" : "Not supported |";
+                row += speechBaseModelCells.ContainsKey(locale.Key) ? $"{speechBaseModelCells[locale.Key]} |" : "Not supported |";
                 markdown.Add(row);
             }
             
             return markdown;
         }
 
-        private Dictionary<string, string> CreateCustomSpeechBaseModelCells(List<BaseModel> customSpeechBaseModels)
+        private Dictionary<string, string> CreateSpeechBaseModelCells(List<BaseModel> speechBaseModels)
         {
             var cells = new Dictionary<string, string>();
-            var customSpeechBaseModelsByLocales = customSpeechBaseModels.GroupBy(v => v.Locale).Select(g => g.ToList()).ToList();
+            var speechBaseModelsByLocales = speechBaseModels.GroupBy(v => v.Locale).Select(g => g.ToList()).ToList();
 
-            foreach(var customSpeechBaseModelsByLocale in customSpeechBaseModelsByLocales)
+            foreach(var speechBaseModelsByLocale in speechBaseModelsByLocales)
             {
-                var currentLocale = customSpeechBaseModelsByLocale.First().Locale;
+                var currentLocale = speechBaseModelsByLocale.First().Locale;
                 var supportsAdaptationsWith = new List<string>();
                 
-                foreach(var customSpeechBaseModel in customSpeechBaseModelsByLocale)
+                foreach(var speechBaseModel in speechBaseModelsByLocale)
                 {
-                    if (customSpeechBaseModel?.Properties?.Features?.SupportsAdaptationsWith != null)
+                    if (speechBaseModel?.Properties?.Features?.SupportsAdaptationsWith != null)
                     {
-                        supportsAdaptationsWith.AddRange(customSpeechBaseModel.Properties.Features.SupportsAdaptationsWith.ToList());
+                        supportsAdaptationsWith.AddRange(speechBaseModel.Properties.Features.SupportsAdaptationsWith.ToList());
                     }
                 }
                 
